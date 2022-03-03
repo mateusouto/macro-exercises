@@ -1,0 +1,44 @@
+---
+title: "Real Interest Rate in Brazil"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include=FALSE}
+library('Quandl')
+library('ggplot2')
+library('dplyr')
+```
+
+## Collecting Data
+
+```{r data}
+Quandl.api_key('_CttgEjLzAUcRMgYv1kT')
+
+selic1 = Quandl('BCB/4189', order = 'asc', start_date = '2012-06-01')
+infla1 = Quandl('BCB/13522', order = 'asc', star_date = '2012-06-01')
+```
+
+## Creating a tool
+
+```{r tool}
+selic_infla = inner_join(selic1, infla1, by='Date') %>%
+  rename(Selic=Value.x, IPCA=Value.y) %>%
+  mutate(Juros_Reais = (((1+(Selic/100))/(1+(IPCA/100)))-1)*100)
+```
+
+## Visualizing the Data
+
+```{r plot}
+selic_infla %>%
+  ggplot(aes(x=Date, y=Juros_Reais))+
+  geom_line()+
+  geom_hline(yintercept = 0, linetype = 'dashed', colour = 'red')+
+  labs(title = 'Brazilian Real Interest Rate Time Series',
+       x = 'Date',
+       y = 'Real Interest Rate',
+       caption = 'Source: Brazilian Central Bank')
+```
